@@ -1,7 +1,9 @@
-﻿using InMemoryCacheExample.Models;
+﻿using InMemoryCacheExample.Data;
+using InMemoryCacheExample.Models.Entities;
+using InMemoryCacheExample.Models.RequestModels;
+using InMemoryCacheExample.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace InMemoryCacheExample.Controllers
 {
@@ -9,13 +11,13 @@ namespace InMemoryCacheExample.Controllers
     [ApiController]
     public class BlogController : ControllerBase
     {
-        private readonly IMemoryCache _cache;
         private readonly AppDbContext _appDbContext;
+        private readonly CacheService _cacheService;
 
-        public BlogController(IMemoryCache cache, AppDbContext appDbContext)
+        public BlogController(AppDbContext appDbContext, CacheService cacheService)
         {
-            _cache = cache;
             _appDbContext = appDbContext;
+            _cacheService = cacheService;
         }
 
         #region Get Blogs
@@ -24,24 +26,20 @@ namespace InMemoryCacheExample.Controllers
         {
             try
             {
-                List<BlogDataModel>? blogs = new();
-                if (_cache.TryGetValue("blogs", out blogs))
+                var cachedList = _cacheService.GetData<BlogDataModel>("blogs");
+                if (cachedList is not null)
                 {
-                    return Ok(blogs);
+                    return Ok(cachedList);
                 }
 
-                blogs = await _appDbContext.Blogs
+                List<BlogDataModel> lst = await _appDbContext.Blogs
                     .AsNoTracking()
                     .OrderByDescending(x => x.Blog_Id)
                     .ToListAsync();
 
-                //var cacheOptions = new MemoryCacheEntryOptions
-                //{
-                //    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-                //};
-                _cache.Set("blogs", blogs);
+                _cacheService.SetData("blogs", lst);
 
-                return Ok(blogs);
+                return Ok(lst);
             }
             catch (Exception ex)
             {
@@ -77,7 +75,7 @@ namespace InMemoryCacheExample.Controllers
                         .AsNoTracking()
                         .OrderByDescending(x => x.Blog_Id)
                         .ToListAsync();
-                    _cache.Set("blogs", updatedBlogs);
+                    _cacheService.SetData("blogs", updatedBlogs);
 
                     return StatusCode(202, "Blog data updated.");
                 }

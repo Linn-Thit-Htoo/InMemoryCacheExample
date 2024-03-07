@@ -1,7 +1,7 @@
-﻿using InMemoryCacheExample.Models;
+﻿using InMemoryCacheExample.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace InMemoryCacheExample
+namespace InMemoryCacheExample.Data
 {
     public class AppDbContext : DbContext
     {
@@ -9,5 +9,6 @@ namespace InMemoryCacheExample
         {
         }
         public DbSet<BlogDataModel> Blogs { get; set; }
+        public DbSet<UserDataModel> Users { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-using InMemoryCacheExample;
+using InMemoryCacheExample.Data;
+using InMemoryCacheExample.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -18,6 +19,8 @@ builder.Services.Configure<MemoryCacheEntryOptions>(options =>
 {
     options.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
 });
+
+builder.Services.AddSingleton<CacheService>();
 
 var app = builder.Build();
 

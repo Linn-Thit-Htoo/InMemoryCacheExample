@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace InMemoryCacheExample.Models
+namespace InMemoryCacheExample.Models.Entities
 {
     [Table("Tbl_Blog")]
     public class BlogDataModel

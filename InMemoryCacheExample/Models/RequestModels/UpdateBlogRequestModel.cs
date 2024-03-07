@@ -1,4 +1,4 @@
-﻿namespace InMemoryCacheExample.Models
+﻿namespace InMemoryCacheExample.Models.RequestModels
 {
     public class UpdateBlogRequestModel
     {
