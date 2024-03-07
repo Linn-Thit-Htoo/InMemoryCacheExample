@@ -35,12 +35,11 @@ namespace InMemoryCacheExample.Controllers
                     .OrderByDescending(x => x.Blog_Id)
                     .ToListAsync();
 
-                var cacheOptions = new MemoryCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
-                };
-
-                _cache.Set("blogs", blogs, cacheOptions);
+                //var cacheOptions = new MemoryCacheEntryOptions
+                //{
+                //    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                //};
+                _cache.Set("blogs", blogs);
 
                 return Ok(blogs);
             }
@@ -50,5 +49,50 @@ namespace InMemoryCacheExample.Controllers
             }
         }
         #endregion
+
+        #region Update Blog
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBlog(int id, UpdateBlogRequestModel requestModel)
+        {
+            try
+            {
+                if (IsNullOrEmpty(requestModel.Blog_Title, requestModel.Blog_Author, requestModel.Blog_Content))
+                    goto Fail;
+
+                BlogDataModel? item = await _appDbContext.Blogs
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Blog_Id == id);
+                if (item is null)
+                    return NotFound("No data found.");
+
+                _appDbContext.Attach(item);
+                item.Blog_Title = requestModel.Blog_Title;
+                item.Blog_Author = requestModel.Blog_Author;
+                item.Blog_Content = requestModel.Blog_Content;
+                int result = await _appDbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    List<BlogDataModel> updatedBlogs = await _appDbContext.Blogs
+                        .AsNoTracking()
+                        .OrderByDescending(x => x.Blog_Id)
+                        .ToListAsync();
+                    _cache.Set("blogs", updatedBlogs);
+
+                    return StatusCode(202, "Blog data updated.");
+                }
+                goto Fail;
+
+            Fail:
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        #endregion
+
+        public static bool IsNullOrEmpty(params string[] strings) => strings.Any(string.IsNullOrEmpty);
     }
 }

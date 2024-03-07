@@ -1,5 +1,6 @@
 using InMemoryCacheExample;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,10 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 }, ServiceLifetime.Transient);
 
 builder.Services.AddMemoryCache();
+builder.Services.Configure<MemoryCacheEntryOptions>(options =>
+{
+    options.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
+});
 
 var app = builder.Build();
 
