@@ -26,7 +26,8 @@ namespace InMemoryCacheExample.Controllers
         {
             try
             {
-                var cachedList = _cacheService.GetData<BlogDataModel>("blogs");
+                List<BlogDataModel>? cachedList = _cacheService.GetData<BlogDataModel>("blogs");
+
                 if (cachedList is not null)
                 {
                     return Ok(cachedList);
